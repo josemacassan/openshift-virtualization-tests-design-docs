@@ -167,7 +167,7 @@ None — reviewed and confirmed that all supported product functionality will be
 **Test Limitations**
 
 None — reviewed and confirmed that no test limitations apply for this release.
-  - *Sign-off:* Jose Manuel Castano/2026-06-17
+- *Sign-off:* Jose Manuel Castano/2026-06-17
 
 #### **2. Test Strategy**
 
