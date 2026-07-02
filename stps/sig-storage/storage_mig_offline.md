@@ -20,7 +20,7 @@ None
 
 ### **Feature Overview**
 
-This feature extends the OpenShift Virtualization migration plan to support storage migration for offline (stopped) VMs in addition to existing online (running) VM support. It enables customers to migrate storage for VMs regardless of their running state, allowing mixed migration plans containing both offline and running VMs.
+This feature enables customers to migrate storage for VMs regardless of their running state, including stopped VMs. Customers can perform batch storage migrations that include both offline and running VMs in a single operation.
 
 ---
 
@@ -36,10 +36,10 @@ technology, and testability before formal test planning.
     - Support storage migration for offline (stopped) VMs between different storage classes
     - Support mixed migration plans containing both offline and running VMs
     - Support offline VM storage migration with hotplug disks attached
-    - Support retentionPolicy configuration for source volume cleanup after offline VM migration
+    - Support source volume cleanup policy configuration for offline VM migration (retain or delete source volumes after migration completes)
     - Ensure offline VMs remain pointing to original volumes when migration fails
-    - Support VM start operations during ongoing storage migration, the VM must start after migration completion (volumes are switched to new target volumes in pending state once migration begins)
-    - Support all volume mode combinations (File-to-Block, Block-to-File, File-to-File, Block-to-Block) given that CDI copy clone performs the underlying storage transfer
+    - Support VM start operations during ongoing storage migration — when a user starts a stopped VM during migration, the VM waits for migration to complete before becoming ready (the VM transitions to Running only after storage migration finishes)
+    - Support all volume mode combinations for cross-storage migration (File-to-Block, Block-to-File, File-to-File, Block-to-Block)
     - Reviewed user cases for offline VM storage migration from CNV-82430 and CNV-73500
 
 - [x] **Understand Value and Customer Use Cases**
@@ -73,6 +73,7 @@ technology, and testability before formal test planning.
       - VM disk references remain unchanged and point to original storage
     - As a VM owner, I want migration to succeed when starting a stopped VM during migration, so that:
       - Migration plan status reports "Succeeded"
+      - VM remains in a pending state throughout the migration and only becomes Ready after migration completes (proves no disrupt-then-restart occurred)
       - VM start operation waits for migration to complete before the VM becomes ready (volumes are switched to target storage in pending state)
       - VM points to target storage and starts successfully after migration completes
 
@@ -85,7 +86,7 @@ technology, and testability before formal test planning.
     - **Monitoring:** Not applicable - Feature does not introduce new metrics or alerts; existing migration monitoring applies
     - **Observability:** Not applicable - Feature reuses existing migration observability patterns without new requirements
     - **Security:** Not applicable - Feature does not introduce new security boundaries or authentication/authorization requirements; leverages existing migration RBAC
-    - **Scalability:** Not applicable - Scalability characteristics inherit from existing migration infrastructure; no new scalability requirements introduced
+    - **Scalability:** Inherits existing limits - Feature reuses existing migration infrastructure with its cluster-level parallelism constraints (CDI clone concurrency and migration plan limits); offline VM support introduces no additional scalability requirements
 
 #### **2. Known Limitations**
 
@@ -100,8 +101,16 @@ None - reviewed and confirmed with Jose Manuel Castano on Apr 28,2026.
   - *Key takeaways and concerns:* Extend the offline VMs storage migration support
 
 - [x] **Technology Challenges**
-  - *List identified challenges:* Offline migration uses a different mechanism than online migration, requiring separate test coverage
-  - *Impact on testing approach:* Test cases must verify both offline VM migration mixed scenarios with both offline and running VMs in the same migration plan.
+  - *List identified challenges:*
+    - Simulating migration failures for offline VMs requires injecting failures at specific points (e.g., storage provisioning failures, clone failures) to verify rollback behavior
+    - Testing VM start during migration requires precise timing control to ensure the VM start request occurs while migration is in progress
+    - Verifying volume mode conversion behavior (Block-to-File, File-to-Block) requires validation that data remains accessible after conversion
+    - Testing mixed migration plans requires coordinating both offline and online migration paths simultaneously to verify they don't interfere
+  - *Impact on testing approach:*
+    - Test framework must support failure injection mechanisms for storage operations
+    - Test cases need timing coordination to trigger VM start at specific migration stages
+    - Verification logic must include data integrity checks across volume mode conversions
+    - Mixed migration scenarios require monitoring both offline and online VMs throughout the migration lifecycle
 
 - [x] **API Extensions**
   - *List new or modified APIs:* No new APIs - extends existing migration plan API to handle offline VMs
@@ -135,9 +144,8 @@ The following storage classes are supported for migration testing:
 - **ODF** (ocs-storagecluster-ceph-rbd-virtualization)
 - **HPP** (hostpath-csi-pvc-block)
 
-Migration combinations will be tested including:
-- Cross-storage class migrations (e.g., ODF ↔ HPP)
-- Same-storage class migrations (e.g., ODF ↔ ODF, HPP ↔ HPP)
+Migration combinations will be tested:
+- Cross-storage class migrations (ODF ↔ HPP)
 
 **Volume Mode Coverage**
 
@@ -152,9 +160,14 @@ All volume mode combinations are supported and will be tested:
 The following items are explicitly Out of Scope for this test cycle and represent intentional exclusions.
 No verification activities will be performed for these items, and any related issues found will not be classified as defects for this release.
 
-None
+None — reviewed and confirmed that all supported product functionality will be tested this cycle.
 
 > **PM Sign-off:** Peter Lauterbach/2026-06-17
+
+**Test Limitations**
+
+None — reviewed and confirmed that no test limitations apply for this release.
+  - *Sign-off:* Jose Manuel Castano/2026-06-17
 
 #### **2. Test Strategy**
 
