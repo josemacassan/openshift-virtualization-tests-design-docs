@@ -135,6 +135,7 @@ This STP serves as the **overall roadmap for testing**, detailing the scope, app
 - **[P0]** Verify storage migration completes for a migration plan containing both offline and running VMs
 - **[P0]** Verify source volumes are retained or deleted according to retentionPolicy configuration when offline VM storage migration completes
 - **[P1]** Verify offline VM storage migration completes when the VM has hotplug disks attached
+- **[P1]** Verify offline VM storage migration completes for same-storage class migrations (HPP to HPP) to enable node-to-node migration with local storage
 - **[P2]** Verify offline VM continues pointing to the original volume when storage migration fails
 - **[P2]** Verify storage migration completes when a stopped VM is started during the migration process and the VM waits for migration completion before becoming ready
 
@@ -146,6 +147,7 @@ The following storage classes are supported for migration testing:
 
 Migration combinations will be tested:
 - Cross-storage class migrations (ODF ↔ HPP)
+- Same-storage class migrations (HPP → HPP) for node-to-node migration scenarios with local storage
 
 **Volume Mode Coverage**
 
@@ -322,13 +324,17 @@ The following conditions must be met before testing can begin:
   - *Test Scenario:* [Tier 2] Verify storage migration completes for a migration plan containing both offline and running VMs
   - *Priority:* P0
 
+- **[CNV-73500]** — As a VM owner, I want to retain or delete the source volume for an offline VM
+  - *Test Scenario:* [Tier 2] Verify source volume is retained or cleaned up for an offline VM when retentionPolicy is set in the Migration Plan
+  - *Priority:* P0
+
 - **[CNV-73500]** — As a VM owner, I want to migrate storage for offline VMs with hotplug disk
   - *Test Scenario:* [Tier 2] Verify storage migration completes successfully for offline VM with hotplug disk
   - *Priority:* P1
 
-- **[CNV-73500]** — As a VM owner, I want to retain or delete the source volume for an offline VM
-  - *Test Scenario:* [Tier 2] Verify source volume is retained or cleaned up for an offline VM when retentionPolicy is set in the Migration Plan
-  - *Priority:* P0
+- **[CNV-73500]** — As a VM owner, I want to migrate storage for offline VMs between nodes using the same storage class (HPP)
+  - *Test Scenario:* [Tier 2] Verify storage migration completes for offline VM from HPP to HPP storage class across different nodes, enabling node-to-node migration without requiring RWX storage
+  - *Priority:* P1
 
 - **[CNV-73500]** — As a VM owner, I want an offline VM to still point to the original volume when migration fails
   - *Test Scenario:* [Tier 2] Verify an offline VM still points to the original volume when migration fails
