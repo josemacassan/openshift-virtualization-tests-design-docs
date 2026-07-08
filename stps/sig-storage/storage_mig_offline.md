@@ -66,8 +66,8 @@ technology, and testability before formal test planning.
       - All disks including hotplug disks are migrated to target storage class
       - VM boots successfully with all disks accessible
     - As a VM owner, I want to retain or delete the source volume for an offline VM, so that:
-      - When retentionPolicy=retain: source volumes exist after migration completes
-      - When retentionPolicy=delete: source volumes are deleted after migration completes
+      - When the cleanup policy is set to retain: source volumes exist after migration completes
+      - When the cleanup policy is set to delete: source volumes are deleted after migration completes
     - As a VM owner, I want an offline VM to point to the original volume when migration fails, so that:
       - Migration plan status reports "Failed"
       - VM disk references remain unchanged and point to original storage
@@ -133,7 +133,7 @@ This STP serves as the **overall roadmap for testing**, detailing the scope, app
 
 - **[P0]** Verify offline VM storage migration completes between ODF and HPP storage classes, and the VM boots successfully after migration
 - **[P0]** Verify storage migration completes for a migration plan containing both offline and running VMs
-- **[P0]** Verify source volumes are retained or deleted according to retentionPolicy configuration when offline VM storage migration completes
+- **[P0]** Verify source volumes are retained or deleted according to the source volume cleanup policy when offline VM storage migration completes
 - **[P1]** Verify offline VM storage migration completes when the VM has hotplug disks attached
 - **[P1]** Verify offline VM storage migration completes for same-storage class migrations (HPP to HPP) to enable node-to-node migration with local storage
 - **[P2]** Verify offline VM continues pointing to the original volume when storage migration fails
@@ -184,6 +184,9 @@ None — reviewed and confirmed that no test limitations apply for this release.
 - [x] **Regression Testing** — Verifies that new changes do not break existing functionality
   - *Details:* Verify that existing online VM storage migration functionality remains unaffected by the offline VM support additions
 
+- [ ] **Self-Validation Testing** — Should any of the new tests be included in the self-validation test package?
+  - *Details:* N/A. Offline storage migration is not a core operational health-check scenario suitable for the self-validation package.
+
 **Non-Functional**
 
 - [ ] **Performance Testing** — Validates feature performance meets requirements (latency, throughput, resource usage)
@@ -222,7 +225,7 @@ None — reviewed and confirmed that no test limitations apply for this release.
 **Infrastructure**
 
 - [x] **Cloud Testing** — Does the feature require multi-cloud platform testing? Consider cloud-specific features.
-  - *Details:* Multi-cloud platform testing is required to validate storage migration across cloud provider storage classes (AWS EBS, Azure Disk, GCP PD). Since CDI copy clone performs the underlying storage transfer, the feature works across all platforms.
+  - *Details:* Cloud storage migration uses platform default storage classes and does not require dedicated cloud-specific test scenarios. The feature leverages CDI copy clone for underlying storage transfer, which is platform-agnostic. Testing with bare-metal storage classes (ODF and HPP) validates the migration mechanism; cloud platforms (AWS EBS, Azure Disk, GCP PD) inherit this validated behavior through the same CDI infrastructure.
 
 #### **3. Test Environment**
 
@@ -268,56 +271,38 @@ The following conditions must be met before testing can begin:
 
 - **Risk:** No scheduling or deadline risks identified
   - **Mitigation:** Standard test timeline is sufficient for planned test scenarios
-  - *Estimated impact on schedule:* None
-  - *Sign-off:* Jose Manuel Castano, Apr 28, 2026
 
 **Test Coverage**
 
 - **Risk:** No gaps in test coverage identified
   - **Mitigation:** All acceptance criteria are covered by planned test scenarios
-  - *Areas with reduced coverage:* None
-  - *Sign-off:* Jose Manuel Castano, Apr 28, 2026
 
 **Test Environment**
 
 - **Risk:** No hardware, software, or infrastructure constraints identified
   - **Mitigation:** Standard test environment is sufficient for testing this feature
-  - *Missing resources or infrastructure:* None
-  - *Sign-off:* Jose Manuel Castano, Apr 28, 2026
 
 **Untestable Aspects**
 
 - **Risk:** No untestable scenarios identified
   - **Mitigation:** All scenarios can be reproduced in test environment
-  - *Alternative validation approach:* N/A
-  - *Sign-off:* Jose Manuel Castano, Apr 28, 2026
 
 **Resource Constraints**
 
 - **Risk:** No staffing, skill, or capacity limitations identified
   - **Mitigation:** Current QE team capacity is sufficient for planned test execution
-  - *Current capacity gaps:* None
-  - *Sign-off:* Jose Manuel Castano, Apr 28, 2026
 
 **Dependencies**
 
 - **Risk:** No blocking external dependencies identified
   - **Mitigation:** UI team updates for offline VM selection are non-blocking; API testing can proceed independently
-  - *Dependent teams or components:* UI team for UI updates (non-blocking)
-  - *Sign-off:* Jose Manuel Castano, Apr 28, 2026
-
-**Other**
-
-- **Risk:** No additional risks identified
-  - **Mitigation:** No additional mitigation required
-  - *Sign-off:* Jose Manuel Castano, Apr 28, 2026
 
 ---
 
 ### **III. Test Scenarios & Traceability**
 
 - **[CNV-73500]** — As a VM owner, I want to migrate storage for offline VMs between ODF and HPP
-  - *Test Scenario:* [Tier 2] Verify storage migration completes for offline VMs between ODF and HPP, and the VM boots successfully after migration
+  - *Test Scenario:* [Tier 2] Verify storage migration completes for offline VMs between ODF and HPP across all volume mode combinations (Block-to-Block, File-to-File, Block-to-File, File-to-Block), and the VM boots successfully after migration
   - *Priority:* P0
 
 - **[CNV-73500]** — As a VM owner, I want to migrate storage with mixed VM states (online and offline)
@@ -325,7 +310,7 @@ The following conditions must be met before testing can begin:
   - *Priority:* P0
 
 - **[CNV-73500]** — As a VM owner, I want to retain or delete the source volume for an offline VM
-  - *Test Scenario:* [Tier 2] Verify source volume is retained or cleaned up for an offline VM when retentionPolicy is set in the Migration Plan
+  - *Test Scenario:* [Tier 2] Verify source volume is retained or cleaned up for an offline VM when the source volume cleanup policy is configured in the Migration Plan
   - *Priority:* P0
 
 - **[CNV-73500]** — As a VM owner, I want to migrate storage for offline VMs with hotplug disk
