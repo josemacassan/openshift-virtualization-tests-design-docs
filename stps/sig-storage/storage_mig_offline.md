@@ -40,7 +40,6 @@ technology, and testability before formal test planning.
     - Ensure offline VMs remain pointing to original volumes when migration fails
     - Support VM start operations during ongoing storage migration — when a user starts a stopped VM during migration, the VM waits for migration to complete before becoming ready (the VM transitions to Running only after storage migration finishes)
     - Support all volume mode combinations for cross-storage migration (File-to-Block, Block-to-File, File-to-File, Block-to-Block)
-    - Reviewed user cases for offline VM storage migration from CNV-82430 and CNV-73500
 
 - [x] **Understand Value and Customer Use Cases**
   - *Describe the feature's value to customers:* Customers need to perform storage migration for offline VMs without requiring them to be running, providing flexibility in storage management operations.
@@ -74,19 +73,21 @@ technology, and testability before formal test planning.
     - As a VM owner, I want migration to succeed when starting a stopped VM during migration, so that:
       - Migration plan status reports "Succeeded"
       - VM remains in a pending state throughout the migration and only becomes Ready after migration completes (proves no disrupt-then-restart occurred)
-      - VM start operation waits for migration to complete before the VM becomes ready (volumes are switched to target storage in pending state)
+      - VM start operation waits for migration to complete before the VM becomes ready
       - VM points to target storage and starts successfully after migration completes
 
   - *Note any gaps or missing criteria:* N/A
 
 - [x] **Non-Functional Requirements (NFRs)**
-  - *List applicable NFRs and their targets:* Documentation updates to reflect offline VM storage migration support and UI support for offline VM migrations.
+  - *List applicable NFRs and their targets:*
+    - **Documentation:** User guide updates for offline VM storage migration support
+    - **UI:** UI updates for offline VM migration selection (covered by UI team in CNV-77503)
   - *Note any NFRs not covered and why:*
     - **Performance:** Not covered - Performance testing for bulk offline migrations is tracked separately and will be addressed by a dedicated test plan
     - **Monitoring:** Not applicable - Feature does not introduce new metrics or alerts; existing migration monitoring applies
     - **Observability:** Not applicable - Feature reuses existing migration observability patterns without new requirements
     - **Security:** Not applicable - Feature does not introduce new security boundaries or authentication/authorization requirements; leverages existing migration RBAC
-    - **Scalability:** Inherits existing limits - Feature reuses existing migration infrastructure with its cluster-level parallelism constraints (CDI clone concurrency and migration plan limits); offline VM support introduces no additional scalability requirements
+    - **Scalability:** Inherits existing limits - Feature reuses existing migration infrastructure with its cluster-level parallelism constraints; offline VM support introduces no additional scalability requirements
 
 #### **2. Known Limitations**
 
@@ -225,7 +226,7 @@ None — reviewed and confirmed that no test limitations apply for this release.
 **Infrastructure**
 
 - [x] **Cloud Testing** — Does the feature require multi-cloud platform testing? Consider cloud-specific features.
-  - *Details:* Cloud storage migration uses platform default storage classes and does not require dedicated cloud-specific test scenarios. The feature leverages CDI copy clone for underlying storage transfer, which is platform-agnostic. Testing with bare-metal storage classes (ODF and HPP) validates the migration mechanism; cloud platforms (AWS EBS, Azure Disk, GCP PD) inherit this validated behavior through the same CDI infrastructure.
+  - *Details:* Cloud storage migration uses platform default storage classes and does not require dedicated cloud-specific test scenarios. The underlying storage transfer mechanism is platform-agnostic. Testing with bare-metal storage classes (ODF and HPP) validates the migration mechanism; cloud platforms (AWS EBS, Azure Disk, GCP PD) inherit this validated behavior through the same storage migration infrastructure.
 
 #### **3. Test Environment**
 
@@ -301,31 +302,31 @@ The following conditions must be met before testing can begin:
 
 ### **III. Test Scenarios & Traceability**
 
-- **[CNV-73500]** — As a VM owner, I want to migrate storage for offline VMs between ODF and HPP
+- **[CNV-77501]** — As a VM owner, I want to migrate storage for offline VMs between ODF and HPP
   - *Test Scenario:* [Tier 2] Verify storage migration completes for offline VMs between ODF and HPP across all volume mode combinations (Block-to-Block, File-to-File, Block-to-File, File-to-Block), and the VM boots successfully after migration
   - *Priority:* P0
 
-- **[CNV-73500]** — As a VM owner, I want to migrate storage with mixed VM states (online and offline)
+- **[CNV-77501]** — As a VM owner, I want to migrate storage with mixed VM states (online and offline)
   - *Test Scenario:* [Tier 2] Verify storage migration completes for a migration plan containing both offline and running VMs
   - *Priority:* P0
 
-- **[CNV-73500]** — As a VM owner, I want to retain or delete the source volume for an offline VM
+- **[CNV-77501]** — As a VM owner, I want to retain or delete the source volume for an offline VM
   - *Test Scenario:* [Tier 2] Verify source volume is retained or cleaned up for an offline VM when the source volume cleanup policy is configured in the Migration Plan
   - *Priority:* P0
 
-- **[CNV-73500]** — As a VM owner, I want to migrate storage for offline VMs with hotplug disk
+- **[CNV-77501]** — As a VM owner, I want to migrate storage for offline VMs with hotplug disk
   - *Test Scenario:* [Tier 2] Verify storage migration completes successfully for offline VM with hotplug disk
   - *Priority:* P1
 
-- **[CNV-73500]** — As a VM owner, I want to migrate storage for offline VMs between nodes using the same storage class (HPP)
+- **[CNV-77501]** — As a VM owner, I want to migrate storage for offline VMs between nodes using the same storage class (HPP)
   - *Test Scenario:* [Tier 2] Verify storage migration completes for offline VM from HPP to HPP storage class across different nodes, enabling node-to-node migration without requiring RWX storage
   - *Priority:* P1
 
-- **[CNV-73500]** — As a VM owner, I want an offline VM to still point to the original volume when migration fails
+- **[CNV-77501]** — As a VM owner, I want an offline VM to still point to the original volume when migration fails
   - *Test Scenario:* [Tier 2] Verify an offline VM still points to the original volume when migration fails
   - *Priority:* P2
 
-- **[CNV-73500]** — As a VM owner, I want the migration to succeed when starting a stopped VM during migration
+- **[CNV-77501]** — As a VM owner, I want the migration to succeed when starting a stopped VM during migration
   - *Test Scenario:* [Tier 2] Verify migration succeeds when starting a VM during the migration process and the VM waits for migration completion before becoming ready
   - *Priority:* P2
 
