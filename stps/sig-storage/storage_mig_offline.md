@@ -206,7 +206,7 @@ None — reviewed and confirmed that no test limitations apply for this release.
   - *Details:* UI testing will be covered in https://redhat.atlassian.net/browse/CNV-77503
 
 - [x] **Monitoring** — Does the feature require metrics and/or alerts?
-  - *Details:* No new metrics or alerts are required. Existing migration monitoring (including progress field) applies to both online and offline VM migrations. Progress reporting for offline migrations must be verified to ensure it functions correctly.
+  - *Details:* No new metrics or alerts are required. Existing migration monitoring (including migration progress reporting) applies to both online and offline VM migrations and is covered by existing regression suites.
 
 **Integration & Compatibility**
 
