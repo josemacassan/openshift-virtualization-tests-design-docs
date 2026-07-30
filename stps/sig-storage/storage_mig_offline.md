@@ -70,6 +70,7 @@ technology, and testability before formal test planning.
     - As a VM owner, I want an offline VM to point to the original volume when migration fails, so that:
       - Migration plan status reports "Failed"
       - VM disk references remain unchanged and point to original storage
+      - Source-volume survival when cleanup policy is delete and migration fails is covered by [storage_mig_cleanup.md](stps/sig-storage/storage_mig_cleanup.md)
     - As a VM owner, I want migration to succeed when starting a stopped VM during migration, so that:
       - Migration plan status reports "Succeeded"
       - VM remains in a pending state throughout the migration and only becomes Ready after migration completes (proves no disrupt-then-restart occurred)
@@ -139,6 +140,10 @@ This STP serves as the **overall roadmap for testing**, detailing the scope, app
 - **[P1]** Verify offline VM storage migration completes for same-storage class migrations (HPP to HPP) to enable node-to-node migration with local storage
 - **[P2]** Verify offline VM continues pointing to the original volume when storage migration fails
 - **[P2]** Verify storage migration completes when a stopped VM is started during the migration process and the VM waits for migration completion before becoming ready
+
+> **Failure-path priority rationale:** The migration-failure scenario is P2 rather than P0 because offline VM migration reuses the same rollback mechanism already validated by existing online VM storage migration tests. Since the VM is stopped during offline migration, a failed migration carries lower operational risk than the online case — no running workload is disrupted, and the VM remains safely pointing to its original volumes. The rollback path is covered at P2 to confirm it works for the offline case, but it does not block GA given the existing online migration failure coverage.
+>
+> *PM Agreement:* Peter Lauterbach/2026-06-17
 
 **Storage Class Coverage**
 
@@ -303,31 +308,31 @@ The following conditions must be met before testing can begin:
 ### **III. Test Scenarios & Traceability**
 
 - **[CNV-77501]** — As a VM owner, I want to migrate storage for offline VMs between ODF and HPP
-  - *Test Scenario:* [Tier 2] Verify storage migration completes for offline VMs between ODF and HPP across all volume mode combinations (Block-to-Block, File-to-File, Block-to-File, File-to-Block), and the VM boots successfully after migration
+  - *Test Scenario:* [Tier 2] Verify storage migration completes for offline VMs between ODF and HPP across all volume mode combinations (Block-to-Block, File-to-File, Block-to-File, File-to-Block): VM boots successfully after migration, and pre-written guest data remains readable and unchanged after each volume-mode combination
   - *Priority:* P0
 
 - **[CNV-77501]** — As a VM owner, I want to migrate storage with mixed VM states (online and offline)
-  - *Test Scenario:* [Tier 2] Verify storage migration completes for a migration plan containing both offline and running VMs
+  - *Test Scenario:* [Tier 2] Verify storage migration completes for a migration plan containing both offline and running VMs: migration plan status reports "Succeeded", all offline VMs point to the target storage class, and all running VMs point to the target storage class while remaining running throughout
   - *Priority:* P0
 
 - **[CNV-77501]** — As a VM owner, I want to retain or delete the source volume for an offline VM
-  - *Test Scenario:* [Tier 2] Verify source volume is retained or cleaned up for an offline VM when the source volume cleanup policy is configured in the Migration Plan
+  - *Test Scenario:* [Tier 2] Verify source volume handling for an offline VM matches the configured cleanup policy: source volumes exist after migration when set to retain, and source volumes are deleted after migration when set to delete
   - *Priority:* P0
 
 - **[CNV-77501]** — As a VM owner, I want to migrate storage for offline VMs with hotplug disk
-  - *Test Scenario:* [Tier 2] Verify storage migration completes successfully for offline VM with hotplug disk
+  - *Test Scenario:* [Tier 2] Verify storage migration for offline VM with hotplug disk: migration plan status reports "Succeeded", all disks including hotplug disks are migrated to the target storage class, and VM boots successfully with all disks accessible
   - *Priority:* P1
 
 - **[CNV-77501]** — As a VM owner, I want to migrate storage for offline VMs between nodes using the same storage class (HPP)
-  - *Test Scenario:* [Tier 2] Verify storage migration completes for offline VM from HPP to HPP storage class across different nodes, enabling node-to-node migration without requiring RWX storage
+  - *Test Scenario:* [Tier 2] Verify storage migration for offline VM from HPP to HPP storage class across different nodes: migration plan status reports "Succeeded", VM disk references point to the new volume on the target node, and VM boots successfully after migration
   - *Priority:* P1
 
 - **[CNV-77501]** — As a VM owner, I want an offline VM to still point to the original volume when migration fails
-  - *Test Scenario:* [Tier 2] Verify an offline VM still points to the original volume when migration fails
+  - *Test Scenario:* [Tier 2] Verify offline VM rollback on migration failure: migration plan status reports "Failed", and VM disk references remain unchanged pointing to the original storage
   - *Priority:* P2
 
 - **[CNV-77501]** — As a VM owner, I want the migration to succeed when starting a stopped VM during migration
-  - *Test Scenario:* [Tier 2] Verify migration succeeds when starting a VM during the migration process and the VM waits for migration completion before becoming ready
+  - *Test Scenario:* [Tier 2] Verify migration succeeds when starting a stopped VM during migration: migration plan status reports "Succeeded", VM remains in a pending state throughout the migration, VM becomes ready only after migration completes, and VM points to the target storage class
   - *Priority:* P2
 
 ---
@@ -341,5 +346,5 @@ This Software Test Plan requires approval from the following stakeholders:
   - QE Members (OCP-V): Jenia Peimer (`@jpeimer`), Kate Shvaika (`@kshvaika`), Jose Manuel Castano (`@joscasta`)
 * **Approvers:**
   - QE Architect (OCP-V): Ruth Netser (`@rnetser`)
-  - Principal Developer: Alexander Wels (`@awels`)
+  - Dev Lead: Alexander Wels (`@awels`)
   - PM: Peter Lauterbach (`@pelauter`)
