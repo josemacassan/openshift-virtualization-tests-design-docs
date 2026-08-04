@@ -4,9 +4,9 @@
 
 ### **Metadata & Tracking**
 
-- **Enhancement(s):** [CNV-77501](https://redhat.atlassian.net/browse/CNV-77501) - no VEP exists for this feature
-- **Feature Tracking:** [CNV-73509](https://redhat.atlassian.net/browse/CNV-73509)
-- **Epic Tracking:** [CNV-73500](https://redhat.atlassian.net/browse/CNV-73500)
+- **Enhancement(s):** [CNV-77501](https://issues.redhat.com/browse/CNV-77501) - no VEP exists for this feature
+- **Feature Tracking:** [CNV-73500](https://issues.redhat.com/browse/CNV-73500)
+- **Epic Tracking:** [CNV-73500](https://issues.redhat.com/browse/CNV-73500)
 - **QE Owner(s):** Jose Manuel Castano (joscasta@redhat.com)
 - **Owning SIG:** sig-storage
 - **Participating SIGs:** sig-storage
@@ -95,7 +95,7 @@ technology, and testability before formal test planning.
 The limitations are documented to ensure alignment between development, QA, and product teams.
 The following topics will not be tested or supported.
 
-None - reviewed and confirmed with Jose Manuel Castano on Apr 28,2026.
+None - reviewed and confirmed with Peter Lauterbach on Apr 28,2026.
 
 #### **3. Technology and Design Review**
 
@@ -175,7 +175,7 @@ None — reviewed and confirmed that all supported product functionality will be
 **Test Limitations**
 
 None — reviewed and confirmed that no test limitations apply for this release.
-- *Sign-off:* Jose Manuel Castano/2026-06-17
+- *Sign-off:* Peter Lauterbach/2026-06-17
 
 #### **2. Test Strategy**
 
@@ -208,7 +208,7 @@ None — reviewed and confirmed that no test limitations apply for this release.
   - Does the feature require a UI? If so, ensure the UI aligns with the requirements (UI/UX consistency, accessibility)
   - Does the feature expose CLI commands? If so, validate usability and that needed information is available (e.g., status conditions, clear output)
   - Does the feature trigger backend operations that should be reported to the admin? If so, validate that the user receives clear feedback about the operation and its outcome (e.g., status conditions, events, or notifications indicating success or failure)
-  - *Details:* UI testing will be covered in https://redhat.atlassian.net/browse/CNV-77503
+  - *Details:* UI testing will be covered in https://issues.redhat.com/browse/CNV-77503
 
 - [x] **Monitoring** — Does the feature require metrics and/or alerts?
   - *Details:* No new metrics or alerts are required. Existing migration monitoring (including migration progress reporting) applies to both online and offline VM migrations and is covered by existing regression suites.
