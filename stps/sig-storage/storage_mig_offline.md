@@ -40,6 +40,7 @@ technology, and testability before formal test planning.
     - Ensure offline VMs remain pointing to original volumes when migration fails
     - Support VM start operations during ongoing storage migration — when a user starts a stopped VM during migration, the VM waits for migration to complete before becoming ready (the VM transitions to Running only after storage migration finishes)
     - Support all volume mode combinations for cross-storage migration (File-to-Block, Block-to-File, File-to-File, Block-to-Block)
+    - Support cancellation of in-progress storage migration for both offline and online VMs — cancelling the migration while it is running leaves the VMs pointing to their original volumes
 
 - [x] **Understand Value and Customer Use Cases**
   - *Describe the feature's value to customers:* Customers need to perform storage migration for offline VMs without requiring them to be running, providing flexibility in storage management operations.
@@ -77,6 +78,12 @@ technology, and testability before formal test planning.
       - VM start operation waits for migration to complete before the VM becomes ready
       - VM points to target storage and starts successfully after migration completes
 
+    - As a VM owner, I want to cancel an in-progress storage migration for offline and online VMs, so that:
+      - The migration stops processing
+      - VM disk references remain unchanged and point to the original storage
+      - VM remains running throughout (online VMs)
+      - Source volumes are preserved regardless of the configured cleanup policy
+
   - *Note any gaps or missing criteria:* N/A
 
 - [x] **Non-Functional Requirements (NFRs)**
@@ -106,11 +113,13 @@ None - reviewed and confirmed with Peter Lauterbach on Apr 28,2026.
   - *List identified challenges:*
     - Simulating migration failures for offline VMs requires injecting failures at specific points (e.g., storage provisioning failures, clone failures) to verify rollback behavior
     - Testing VM start during migration requires precise timing control to ensure the VM start request occurs while migration is in progress
+    - Testing migration cancellation requires a sufficiently large disk so the migration takes long enough to cancel while still in progress
     - Verifying volume mode conversion behavior (Block-to-File, File-to-Block) requires validation that data remains accessible after conversion
     - Testing mixed migration plans requires coordinating both offline and online migration paths simultaneously to verify they don't interfere
   - *Impact on testing approach:*
     - Test framework must support failure injection mechanisms for storage operations
     - Test cases need timing coordination to trigger VM start at specific migration stages
+    - Cancellation tests require sufficiently large disks so that migration remains in progress when cancellation is initiated
     - Verification logic must include data integrity checks across volume mode conversions
     - Mixed migration scenarios require monitoring both offline and online VMs throughout the migration lifecycle
 
@@ -140,6 +149,7 @@ This STP serves as the **overall roadmap for testing**, detailing the scope, app
 - **[P1]** Verify offline VM storage migration completes for same-storage class migrations (HPP to HPP) to enable node-to-node migration with local storage
 - **[P2]** Verify offline VM continues pointing to the original volume when storage migration fails
 - **[P2]** Verify storage migration completes when a stopped VM is started during the migration process and the VM waits for migration completion before becoming ready
+- **[P2]** Verify storage migration for offline and online VMs can be cancelled while in progress, the VMs continue pointing to their original volumes, and source volumes are preserved
 
 > **Failure-path priority rationale:** The migration-failure scenario is P2 rather than P0 because offline VM migration reuses the same rollback mechanism already validated by existing online VM storage migration tests. Since the VM is stopped during offline migration, a failed migration carries lower operational risk than the online case — no running workload is disrupted, and the VM remains safely pointing to its original volumes. The rollback path is covered at P2 to confirm it works for the offline case, but it does not block GA given the existing online migration failure coverage.
 >
@@ -333,6 +343,10 @@ The following conditions must be met before testing can begin:
 
 - **[CNV-77501]** — As a VM owner, I want the migration to succeed when starting a stopped VM during migration
   - *Test Scenario:* [Tier 2] Verify migration succeeds when starting a stopped VM during migration: migration plan status reports "Succeeded", VM remains in a pending state throughout the migration, VM becomes ready only after migration completes, and VM points to the target storage class
+  - *Priority:* P2
+
+- **[CNV-77501]** — As a VM owner, I want to cancel an in-progress storage migration for offline and online VMs
+  - *Test Scenario:* [Tier 2] Verify storage migration cancellation while the migration is actively in progress for both offline and online VMs: cancel the migration, verify VM disk references remain unchanged pointing to the original storage, online VMs remain running throughout, and source volumes are preserved
   - *Priority:* P2
 
 ---
