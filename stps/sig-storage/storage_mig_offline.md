@@ -79,7 +79,7 @@ technology, and testability before formal test planning.
       - VM points to target storage and starts successfully after migration completes
 
     - As a VM owner, I want to cancel an in-progress storage migration for offline and online VMs, so that:
-      - The migration stops processing
+      - Migration plan status reports "Canceled"
       - VM disk references remain unchanged and point to the original storage
       - VM remains running throughout (online VMs)
       - Source volumes are preserved regardless of the configured cleanup policy
@@ -346,7 +346,7 @@ The following conditions must be met before testing can begin:
   - *Priority:* P2
 
 - **[CNV-77501]** — As a VM owner, I want to cancel an in-progress storage migration for offline and online VMs
-  - *Test Scenario:* [Tier 2] Verify storage migration cancellation while the migration is actively in progress for both offline and online VMs with the default cleanup policy (keepSource): cancel the migration, verify VM disk references remain unchanged pointing to the original storage, online VMs remain running throughout, and source volumes are preserved
+  - *Test Scenario:* [Tier 2] Verify storage migration cancellation while the migration is actively in progress for both offline and online VMs with the default cleanup policy (keepSource): cancel the migration, verify migration plan status reports "Canceled", VM disk references remain unchanged pointing to the original storage, online VMs remain running throughout, and source volumes are preserved
   - *Priority:* P2
 
 ---
