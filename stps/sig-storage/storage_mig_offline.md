@@ -149,7 +149,7 @@ This STP serves as the **overall roadmap for testing**, detailing the scope, app
 - **[P1]** Verify offline VM storage migration completes for same-storage class migrations (HPP to HPP) to enable node-to-node migration with local storage
 - **[P2]** Verify offline VM continues pointing to the original volume when storage migration fails
 - **[P2]** Verify storage migration completes when a stopped VM is started during the migration process and the VM waits for migration completion before becoming ready
-- **[P2]** Verify storage migration for offline and online VMs can be cancelled while in progress, the VMs continue pointing to their original volumes, and source volumes are preserved
+- **[P2]** Verify storage migration for offline and online VMs can be cancelled while in progress with the default cleanup policy (keepSource), the VMs continue pointing to their original volumes, and source volumes are preserved
 
 > **Failure-path priority rationale:** The migration-failure scenario is P2 rather than P0 because offline VM migration reuses the same rollback mechanism already validated by existing online VM storage migration tests. Since the VM is stopped during offline migration, a failed migration carries lower operational risk than the online case — no running workload is disrupted, and the VM remains safely pointing to its original volumes. The rollback path is covered at P2 to confirm it works for the offline case, but it does not block GA given the existing online migration failure coverage.
 >
@@ -346,7 +346,7 @@ The following conditions must be met before testing can begin:
   - *Priority:* P2
 
 - **[CNV-77501]** — As a VM owner, I want to cancel an in-progress storage migration for offline and online VMs
-  - *Test Scenario:* [Tier 2] Verify storage migration cancellation while the migration is actively in progress for both offline and online VMs: cancel the migration, verify VM disk references remain unchanged pointing to the original storage, online VMs remain running throughout, and source volumes are preserved
+  - *Test Scenario:* [Tier 2] Verify storage migration cancellation while the migration is actively in progress for both offline and online VMs with the default cleanup policy (keepSource): cancel the migration, verify VM disk references remain unchanged pointing to the original storage, online VMs remain running throughout, and source volumes are preserved
   - *Priority:* P2
 
 ---
